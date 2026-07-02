@@ -14,7 +14,7 @@ COOKIE = os.getenv("COOKIE") # 对应remember_web_59ba36addc2b2f9401580f014c7f58
 TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
-LOGIN_URL = https://dash.aclclouds.com/auth/login"
+LOGIN_URL = "https://dash.aclclouds.com/auth/login"
 PROJECT_URL = "https://dash.aclclouds.com/projects"
 
 class AclcloudsRenewal:
