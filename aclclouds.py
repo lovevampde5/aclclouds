@@ -129,7 +129,7 @@ class AclcloudsRenewal:
 
                 # 3. 进入Project页面
                 self.log("📂 进入Project页面")
-                sb.uc_open_with_reconnect(PANEL, reconnect_time=25)
+                sb.uc_open_with_reconnect(PROJECT_URL, reconnect_time=25)
                 time.sleep(5)
                 poject_screenshot = f"{self.screenshot_dir}/poject.png"
                 sb.save_screenshot(poject_screenshot)
