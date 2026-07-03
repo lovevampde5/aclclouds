@@ -22,8 +22,7 @@ from seleniumbase import SB
 
 # ================= 配置区域 =================
 PROXY_URL = os.getenv("PROXY", "")  # 代理
-EMAIL = os.getenv("EMAIL")  # 邮箱
-PASSWORD = os.getenv("PASSWORD")  # 密码
+COOKIE = os.getenv("COOKIE")  # 需要注入的Cookies
 TG_TOKEN = os.getenv("TG_TOKEN")  # tg通知token
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")  # tg通知chat_id
 
