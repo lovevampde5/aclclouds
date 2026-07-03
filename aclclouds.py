@@ -138,29 +138,44 @@ class AclcloudsRenewal:
                 self.log("📂 进入Project页面")
                 sb.uc_open_with_reconnect(PROJECT_URL, reconnect_time=25)
                 time.sleep(5)
-                self.sb.scroll_to_bottom() # 滑动到底部
+                sb.scroll_to_bottom() # 滑动到底部
+                poject_screenshot = f"{self.screenshot_dir}/poject.png"
+                sb.save_screenshot(poject_screenshot)
+                self.send_telegram_notify("访问项目页面", poject_screenshot)
 
                 # 4. 判断是否有Renew按钮
                 selector = "button:contains('Renew')"
                 self.log("🖱️ 查找Renew按钮")
                 time_before = self.get_expiry_time(sb)
                 if not sb.is_element_visible(selector):
-                    self.dump_debug(
-                        "🎉Aclclouds 自动续期",
-                        f"🕒当前无需续期\n🚀剩余使用时间：{time_before}"
-                    )
+                    renew_screenshot = f"{self.screenshot_dir}/renew.png"
+                    sb.save_screenshot(renew_screenshot)
+                    self.send_telegram_notify("未找到Renew按钮,无需续期", renew_screenshot)
                     return
                 # 点击Renew按钮
                 self.log("✅ 找到Renew按钮")
                 sb.wait_for_element_visible(selector, timeout=10)
                 sb.scroll_to(selector)
-                self.human_wait()
+                time.sleep(5)
                 sb.click(selector)
-                poject_screenshot = f"{self.screenshot_dir}/poject.png"
-                sb.save_screenshot(poject_screenshot)
-                self.send_telegram_notify("访问项目页面", poject_screenshot)
+                renew_screenshot = f"{self.screenshot_dir}/renew.png"
+                sb.save_screenshot(renew_screenshot)
+                self.send_telegram_notify("已点击Renew按钮", renew_screenshot)
 
-                return
+                # 5.点击Verify按钮
+                selector = ".auth-captcha-checkbox"
+                self.log("🖱️ 点击验证按钮")
+                self.sb.wait_for_element_visible(selector, timeout=10)
+                # 点击（SeleniumBase 默认自动处理可点击状态）
+                self.log("✅ 找到Verify按钮")
+                self.sb.click(selector)
+                time.sleep(5)
+                time_after = self.get_expiry_time(sb)
+                verify_screenshot = f"{self.screenshot_dir}/verify.png"
+                sb.save_screenshot(verify_screenshot)
+                self.send_telegram_notify("已点击Verify按钮", verify_screenshot)
+                self.log("✅ 流程完毕")
+
             
             except Exception as e:
                 self.log(f"❌ 运行异常: {e}")
