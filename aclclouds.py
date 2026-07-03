@@ -129,19 +129,19 @@ class AclcloudsRenewal:
                     "expires": int(time.time()) + 3600 * 24 * 365
                 })
                 self.log("✅ 注入Cookie成功")
-                login_screenshot = f"{self.screenshot_dir}/login.png"
-                sb.save_screenshot(login_screenshot)
                 time.sleep(5)
-                self.send_telegram_notify("访问登录页面", login_screenshot)
+                #login_screenshot = f"{self.screenshot_dir}/login.png"
+                #sb.save_screenshot(login_screenshot)
+                #self.send_telegram_notify("访问登录页面", login_screenshot)
 
                 # 3. 进入Project页面
                 self.log("📂 进入Project页面")
                 sb.uc_open_with_reconnect(PROJECT_URL, reconnect_time=25)
                 time.sleep(5)
                 sb.scroll_to_bottom() # 滑动到底部
-                poject_screenshot = f"{self.screenshot_dir}/poject.png"
-                sb.save_screenshot(poject_screenshot)
-                self.send_telegram_notify("访问项目页面", poject_screenshot)
+                #poject_screenshot = f"{self.screenshot_dir}/poject.png"
+                #sb.save_screenshot(poject_screenshot)
+                #self.send_telegram_notify("访问项目页面", poject_screenshot)
 
                 # 4. 判断是否有Renew按钮
                 selector = "button:contains('Renew')"
@@ -158,9 +158,9 @@ class AclcloudsRenewal:
                 sb.scroll_to(selector)
                 time.sleep(5)
                 sb.click(selector)
-                renew_screenshot = f"{self.screenshot_dir}/renew.png"
-                sb.save_screenshot(renew_screenshot)
-                self.send_telegram_notify("已点击Renew按钮", renew_screenshot)
+                #renew_screenshot = f"{self.screenshot_dir}/renew.png"
+                #sb.save_screenshot(renew_screenshot)
+                #self.send_telegram_notify("已点击Renew按钮", renew_screenshot)
 
                 # 5.点击Verify按钮
                 selector = ".auth-captcha-checkbox"
