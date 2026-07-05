@@ -215,6 +215,11 @@ class AclcloudsRenewal:
                 time.sleep(10)
                 self.discord_login(sb, EMAIL, PASSWORD)
                 time.sleep(5)
+                sb.uc_gui_click_captcha()
+                time.sleep(3)
+                discord_screenshot = f"{self.screenshot_dir}/discord.png"
+                sb.save_screenshot(discord_screenshot)
+                self.send_telegram_notify("访问discord授权页面", discord_screenshot)
                 self.oauth_debug(sb)
                 self.log("✅ Discord登录成功")
                 time.sleep(5)
