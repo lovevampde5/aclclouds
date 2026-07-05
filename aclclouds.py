@@ -22,12 +22,13 @@ from seleniumbase import SB
 
 # ================= 配置区域 =================
 PROXY_URL = os.getenv("PROXY", "")  # 代理
-COOKIE = os.getenv("COOKIE")  # 需要注入的Cookies
+EMAIL = os.getenv("EMAIL")  # discord邮箱
+PASSWORD = os.getenv("PASSWORD")  # discord密码
 TG_TOKEN = os.getenv("TG_TOKEN")  # tg通知token
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")  # tg通知chat_id
 
 # 目标 URL
-LOGIN_URL = "https://dash.aclclouds.com/auth/login"
+LOGIN_URL = "https://dash.aclclouds.com/auth/oauth/discord"
 PROJECT_URL = "https://dash.aclclouds.com/projects"
 # ===========================================
 
@@ -77,6 +78,99 @@ class AclcloudsRenewal:
         except Exception as e:
             self.log(f"❌ TG 推送失败: {e}")
 
+    def discord_login(self, sb, EMAIL, PASSWORD):
+        self.log("🚀 透过discord进行登录")
+        sb.click('text=Continue with Discord')
+        time.sleep(5)
+
+        self.log("✏️ 输入账号密码")
+
+        sb.fill('input[name="email"]', EMAIL)
+        sb.fill('input[name="password"]', PASSWORD)
+
+        self.log("📤 提交登录")
+        sb.click('button[type="submit"]')
+
+        time.sleep(10)
+
+    # ======================
+    # OAuth（原逻辑完全不动）
+    # ======================
+    def oauth_debug(self, sb):
+
+        self.log("🔐 OAuth 页面分析开始")
+
+        for i in range(20):
+
+            self.log(f"🔍 分析 {i+1}/20")
+            time.sleep(2)
+
+            try:
+                sb.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(0.5)
+                sb.execute_script("window.scrollTo(0, 0);")
+
+                sb.execute_script("""
+                    document.body.scrollTop = document.body.scrollHeight;
+                    document.documentElement.scrollTop = document.documentElement.scrollHeight;
+                """)
+
+                sb.execute_script("""
+                    let all = document.querySelectorAll('*');
+                    for (let el of all) {
+                        try {
+                            if (el.scrollHeight > el.clientHeight) {
+                                el.scrollTop = el.scrollHeight;
+                            }
+                        } catch(e) {}
+                    }
+                """)
+
+                sb.send_keys("body", Keys.PAGE_DOWN)
+                sb.send_keys("body", Keys.PAGE_DOWN)
+                sb.send_keys("body", Keys.END)
+
+                try:
+                    ActionChains(sb.driver).send_keys(Keys.PAGE_DOWN).perform()
+                except:
+                    pass
+
+            except:
+                pass
+
+            #self.shot(sb, f"oauth_debug_{i}.png", "OAuth状态")
+
+            body = sb.get_text("body").lower()
+
+            if "authorize" in body:
+                try:
+                    self.log("🟢 检测到 Authorize，尝试点击")
+
+                    els = sb.find_elements("button") + sb.find_elements("a")
+
+                    for el in els:
+                        try:
+                            if "authorize" in (el.text or "").lower():
+                                sb.execute_script(
+                                    "arguments[0].scrollIntoView({block:'center'});",
+                                    el
+                                )
+                                time.sleep(1)
+                                sb.execute_script("arguments[0].click();", el)
+                                self.log("✅ 已点击 Authorize")
+                                time.sleep(10)
+                                break
+                        except:
+                            pass
+                except:
+                    pass
+
+            if "client.hnhost.net" in sb.get_current_url():
+                self.log("✅ 已跳回目标站点（OAuth完成）")
+                return True
+
+        return False
+
     def get_expiry_time(self, sb):
         selector = ".projects-card-expiry .projects-expiry-value"
         # 等待元素可见（SeleniumBase 内置等待）
@@ -92,12 +186,12 @@ class AclcloudsRenewal:
         
         # 使用 headed=True 强制有头模式渲染到 VNC
         with SB(
-            uc=True,            # 启用反检测模式 
+            uc=True,            # 启用反检测模式
+            test=True, 
             headed=True,        # 关键：强制有头模式
             headless=False,     # 明确禁用 headless
             xvfb=False,         # 禁用内部虚拟显示器，使用系统 DISPLAY
-            user_data_dir="./chrome_profile", # 持久化浏览器身份
-            chromium_arg="--no-sandbox,--disable-dev-shm-usage,--lang=zh-CN,-disable-blink-features=AutomationControlled", # 减少奇怪启动参数
+            chromium_arg="--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-position=0,0,--start-maximized",
             proxy=PROXY_URL if PROXY_URL else None
         ) as sb:
             try:
@@ -118,21 +212,16 @@ class AclcloudsRenewal:
                 # 2. 访问登录首页
                 self.log("🔗 访问登录首页...")
                 sb.uc_open_with_reconnect(LOGIN_URL, reconnect_time=25)
-                sb.add_cookie({
-                    "name": "remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d",
-                    "value": COOKIE,
-                    "domain": "dash.aclclouds.com",
-                    "path": "/",
-                    "httpOnly": True,
-                    "secure": True,
-                    "sameSite": "Lax",
-                    "expires": int(time.time()) + 3600 * 24 * 365
-                })
-                self.log("✅ 注入Cookie成功")
                 time.sleep(5)
-                #login_screenshot = f"{self.screenshot_dir}/login.png"
-                #sb.save_screenshot(login_screenshot)
-                #self.send_telegram_notify("访问登录页面", login_screenshot)
+                self.discord_login(sb, EMAIL, PASSWORD)
+                time.sleep(5)
+                self.oauth_debug(sb)
+                self.log("✅ Discord登录成功")
+                time.sleep(5)
+                login_screenshot = f"{self.screenshot_dir}/login.png"
+                sb.save_screenshot(login_screenshot)
+                self.send_telegram_notify("访问登录页面", login_screenshot)
+                return
 
                 # 3. 进入Project页面
                 self.log("📂 进入Project页面")
