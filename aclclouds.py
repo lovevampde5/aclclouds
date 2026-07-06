@@ -91,7 +91,7 @@ class AclcloudsRenewal:
         # 等待验证码出现
         if not sb.is_element_visible("text=Anti-bot confirmation"):
             result = True
-        except:
+            return result
         # 找按钮
         buttons = sb.find_elements("css=button")
         #print(f"[{i+1}] 按钮数量: {len(buttons)}")
