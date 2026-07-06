@@ -131,7 +131,12 @@ class AclcloudsRenewal:
                 time.sleep(5)
                 self.send_telegram_notify("访问登录页面", login_screenshot)
 
-                # 3. 检查剩余时间
+                # 3. 进入Home页面
+                self.log("📂 进入Home页面")
+                sb.uc_open_with_reconnect(HOME_URL, reconnect_time=25)
+                time.sleep(5)
+
+                # 4. 检查剩余时间
                 self.log("📂 进入Client页面")
                 datas = sb.uc_open_with_reconnect(CHECK_URL, reconnect_time=25)
                 data = json.loads(datas)
@@ -143,7 +148,7 @@ class AclcloudsRenewal:
                     self.log("⏰未到续期时间,流程结束.")
                     self.send_telegram_notify("🎉Aclclouds 自动续期\n⏰未到续期时间,流程结束", "")
                     return
-                # 1. 进入Home页面
+                # 1. 进入Project页面
                 self.log("📂 进入Home页面并点击My services")
                 sb.uc_open_with_reconnect(HOME_URL, reconnect_time=25)
                 time.sleep(5)
