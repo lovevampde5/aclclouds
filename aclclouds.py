@@ -30,7 +30,7 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID")  # tg通知chat_id
 # 目标 URL
 LOGIN_URL = "https://dash.aclclouds.com/auth/login"
 CHECK_URL = "https://dash.aclclouds.com/api/client"
-HOME_URL = "https://dash.aclclouds.com/"
+PROJECT_URL = "https://dash.aclclouds.com/projects"
 # ===========================================
 
 class AclcloudsRenewal:
@@ -86,6 +86,20 @@ class AclcloudsRenewal:
         # 获取文本
         return sb.get_text(selector).strip()
 
+    def run_crack(sb, i):
+        time.sleep(1)
+        # 等待验证码出现
+        if not sb.is_element_visible("text=Anti-bot confirmation"):
+            result = True
+        except:
+        # 找按钮
+        buttons = sb.find_elements("css=button")
+        #print(f"[{i+1}] 按钮数量: {len(buttons)}")
+        if len(buttons) > 0:
+            buttons[0].click()
+            result = False
+        return result
+        
     def run(self):
         self.log("=" * 40)
         self.log("🚀 Aclclouds - Renew流程")
@@ -132,38 +146,9 @@ class AclcloudsRenewal:
                 time.sleep(5)
                 self.send_telegram_notify("访问登录页面", login_screenshot)
 
-                # 3. 进入Home页面
-                self.log("📂 进入Home页面")
-                sb.uc_open_with_reconnect(HOME_URL, reconnect_time=25)
-                time.sleep(5)
-                home_screenshot = f"{self.screenshot_dir}/home.png"
-                sb.save_screenshot(home_screenshot)
-                self.send_telegram_notify("Home", home_screenshot)
-
-                # 4. 检查剩余时间
-                self.log("📂 进入Client页面")
-                cookies = sb.get_cookies()
-                session = requests.Session()
-                for c in cookies:
-                    session.cookies.set(c['name'], c['value'])
-                r = session.get(CHECK_URL)
-                time.sleep(2)
-                #datas = sb.uc_open_with_reconnect(CHECK_URL, reconnect_time=25)
-                data = r.json()
-                expires_at_str = data["data"][0]["attributes"]["expires_at"]
-                expires_at = datetime.fromisoformat(expires_at_str)
-                now = datetime.now(timezone.utc)
-                expires_at_utc = expires_at.astimezone(timezone.utc)
-                if (expires_at_utc - now).total_seconds() > 7200 :
-                    self.log("⏰未到续期时间,流程结束.")
-                    self.send_telegram_notify("🎉Aclclouds 自动续期\n⏰未到续期时间,流程结束", "")
-                    return
-                # 1. 进入Project页面
-                self.log("📂 进入Home页面并点击My services")
-                sb.uc_open_with_reconnect(HOME_URL, reconnect_time=25)
-                time.sleep(5)
-                sb.wait_for_element_visible('a[aria-label="My services"]', timeout=10)
-                sb.click('a[aria-label="My services"]')
+                # 3. 进入Project页面
+                self.log("📂 进入Project页面")
+                sb.uc_open_with_reconnect(PROJECT_URL, reconnect_time=25)
                 time.sleep(5)
                 sb.scroll_to_bottom() # 滑动到底部
                 sb.execute_script("""
@@ -171,11 +156,11 @@ class AclcloudsRenewal:
                 let closeBtn = btns.find(b => b.innerText.includes('Close'));
                 if (closeBtn) closeBtn.click();
                 """) # 关闭 Close
-                home_screenshot = f"{self.screenshot_dir}/home.png"
-                sb.save_screenshot(home_screenshot)
-                self.send_telegram_notify("访问项目页面", home_screenshot)
+                project_screenshot = f"{self.screenshot_dir}/project.png"
+                sb.save_screenshot(project_screenshot)
+                self.send_telegram_notify("访问项目页面", project_screenshot)
 
-                # 2. 判断是否有Renew按钮
+                # 4. 判断是否有Renew按钮
                 selector = "button:contains('Renew')"
                 self.log("🖱️ 查找Renew按钮")
                 time_before = self.get_expiry_time(sb)
@@ -194,14 +179,28 @@ class AclcloudsRenewal:
                 sb.save_screenshot(renew_screenshot)
                 self.send_telegram_notify("已点击Renew按钮", renew_screenshot)
 
-                # 3.点击Verify按钮
+                # 5.点击Verify按钮
                 selector = ".auth-captcha-checkbox"
                 self.log("🖱️ 点击验证按钮")
                 sb.wait_for_element_visible(selector, timeout=10)
                 # 点击（SeleniumBase 默认自动处理可点击状态）
-                self.log("✅ 找到Verify按钮")
+                self.log("✅ 找到Verify按钮并点击")
                 sb.click(selector)
-                time.sleep(5)
+                self.log("🔥 开始执行验证码破解")
+                for i in range(20):
+                    try:
+                        run_crack(sb, i)
+                    except Exception as e:
+                        self.log("❌ 验证码破解程序运行失败")
+                time.sleep(2)
+                if not sb.is_element_visible("text=Anti-bot confirmation"):
+                    time.sleep(90)
+                    selector = "button:contains('Renew')"
+                    sb.wait_for_element_visible(selector, timeout=10)
+                    sb.scroll_to(selector)
+                    self.log("🖱️ 已等待1分半钟并开始点击Renew按钮")
+                    sb.click(selector)
+                    time.sleep(5)
                 time_after = self.get_expiry_time(sb)
                 verify_screenshot = f"{self.screenshot_dir}/verify.png"
                 sb.save_screenshot(verify_screenshot)
