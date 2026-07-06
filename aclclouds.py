@@ -87,7 +87,6 @@ class AclcloudsRenewal:
         return sb.get_text(selector).strip()
 
     def run_crack(sb, i):
-        time.sleep(1)
         # 等待验证码出现
         if not sb.is_element_visible("text=Anti-bot confirmation"):
             result = True
@@ -186,13 +185,14 @@ class AclcloudsRenewal:
                 # 点击（SeleniumBase 默认自动处理可点击状态）
                 self.log("✅ 找到Verify按钮并点击")
                 sb.click(selector)
+                time.sleep(2)
+                clickverify_screenshot = f"{self.screenshot_dir}/clickverify.png"
+                sb.save_screenshot(clickverify_screenshot)
+                self.send_telegram_notify("已点击验证按钮", clickverify_screenshot)
                 self.log("🔥 开始执行验证码破解")
                 for i in range(20):
-                    try:
-                        run_crack(sb, i)
-                    except Exception as e:
-                        self.log("❌ 验证码破解程序运行失败")
-                time.sleep(2)
+                    run_crack(sb, i)
+                    time.sleep(2)
                 if not sb.is_element_visible("text=Anti-bot confirmation"):
                     time.sleep(90)
                     selector = "button:contains('Renew')"
