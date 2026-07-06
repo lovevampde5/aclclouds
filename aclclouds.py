@@ -87,7 +87,6 @@ class AclcloudsRenewal:
         return sb.get_text(selector).strip()
 
     def run_crack(self, sb, i):
-        # 等待验证码出现
         if not sb.is_element_visible("text=Anti-bot confirmation"):
             result = True
             return result
@@ -164,6 +163,7 @@ class AclcloudsRenewal:
                 self.log("🖱️ 查找Renew按钮")
                 time_before = self.get_expiry_time(sb)
                 if not sb.is_element_visible(selector):
+                    self.log("✅ 无发现Renew按钮,无需续期")
                     renew_screenshot = f"{self.screenshot_dir}/renew.png"
                     sb.save_screenshot(renew_screenshot)
                     self.send_telegram_notify(f"🎉Aclclouds 自动续期\n🕒当前无需续期\n🚀剩余使用时间：{time_before}", renew_screenshot)
