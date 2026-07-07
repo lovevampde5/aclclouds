@@ -86,6 +86,47 @@ class AclcloudsRenewal:
         # 获取文本
         return sb.get_text(selector).strip()
 
+    def try_click_robot(self, sb):
+        el = sb.find_element(
+            "xpath",
+            "//*[contains(text(),'I am not a robot')]"
+        )
+        rect = el.rect
+        x = rect["width"]/2
+        y = rect["height"]/2
+        self.log(f"I am not a robot中心坐标:横向-{x},纵向-{y}")
+        actions = ActionChains(sb.driver)
+        actions.move_to_element_with_offset(
+            el,
+            x,
+            y
+        )
+        actions.pause(1)
+        actions.click()
+        actions.perform()
+
+    def try_keep_click(self, sb):
+        el = sb.find_element(
+            "xpath",
+            "//*[contains(text(),'I am not a robot')]"
+        )
+        rect = el.rect
+        x = rect["width"]/2
+        y = rect["height"]/2
+        self.log(f"I am not a robot中心坐标:横向-{x},纵向-{y}")
+        self.log(f"将纵向-{y}向下移动3倍即乘以4")
+        new_y = y * 4
+        actions = ActionChains(sb.driver)
+        actions.move_to_element_with_offset(
+            el,
+            x,
+            new_y
+        )
+        actions.pause(2)
+        actions.click()
+        actions.perform()
+        
+    
     def run_crack(self, sb, i):
         if not sb.is_element_visible("text=Anti-bot confirmation"):
             result = True
@@ -190,28 +231,25 @@ class AclcloudsRenewal:
                 #sb.save_screenshot(clickverify_screenshot)
                 #self.send_telegram_notify("已点击验证按钮", clickverify_screenshot)
 
-                # 6.查找I am not a robot坐标并点击
-                el = sb.find_element(
-                    "xpath",
-                    "//*[contains(text(),'I am not a robot')]"
-                )
-                rect = el.rect
-                print("验证码中心:",
-                      rect["width"]/2,
-                      rect["height"]/2)
-                actions = ActionChains(sb.driver)
-                actions.move_to_element_with_offset(
-                    el,
-                    rect["width"]/2,
-                    rect["height"]/2
-                )
-                actions.pause(1)
-                actions.click()
-                actions.perform()
-                time.sleep(5)
+                # 5.查找I am not a robot坐标并点击
+                self.try_click_robot(sb)
+                time.sleep(3)
                 robot_screenshot = f"{self.screenshot_dir}/robot.png"
                 sb.save_screenshot(robot_screenshot)
-                self.send_telegram_notify("已I am not a robot按钮", robot_screenshot)
+                self.send_telegram_notify("已点击I am not a robot按钮", robot_screenshot)
+
+                # 6.检查是否出现验证码点持续点击第一张图片
+                if not sb.is_element_visible("text=Server renewed successfully"):
+                    for i in range(20): # 尝试20次
+                    self.try_keep_click(sb)
+                    time.sleep(3)
+                    if sb.is_element_visible("text=Server renewed successfully"):
+                        self.log("✅ 验证码图片破解成功")
+                        break
+                self.log("✅ 流程完毕")
+                verify_screenshot = f"{self.screenshot_dir}/verify.png"
+                sb.save_screenshot(verify_screenshot)
+                self.send_telegram_notify("验证码图片点击完毕", verify_screenshot)
                 return
                 
                 if not sb.is_element_visible("text=Server renewed successfully"):
