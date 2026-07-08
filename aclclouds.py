@@ -244,9 +244,9 @@ class AclcloudsRenewal:
                     for i in range(20):
                         self.try_keep_click(sb)
                         time.sleep(3)
-                    if sb.is_element_visible("text=Server renewed successfully"):
-                        self.log("✅ 验证码图片破解成功")
-                        break
+                        if sb.is_element_visible("text=Server renewed successfully"):
+                            self.log("✅ 验证码图片破解成功")
+                            break
                 self.log("✅ 流程完毕")
                 verify_screenshot = f"{self.screenshot_dir}/verify.png"
                 sb.save_screenshot(verify_screenshot)
