@@ -29,8 +29,7 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID")  # tg通知chat_id
 
 # 目标 URL
 LOGIN_URL = "https://dash.aclclouds.com/auth/login"
-CHECK_URL = "https://dash.aclclouds.com/api/client"
-PROJECT_URL = "https://dash.aclclouds.com/projects"
+PROJECT_URL = "https://dash.aclclouds.com/dashboard/projects"
 # ===========================================
 
 class AclcloudsRenewal:
