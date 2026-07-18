@@ -266,11 +266,22 @@ class AclcloudsRenewal:
                 time.sleep(10)
                 login_screenshot = f"{self.screenshot_dir}/login.png"
                 sb.save_screenshot(login_screenshot)
-                self.send_telegram_notify("访问登录页面", login_screenshot)
-                return
+                self.send_telegram_notify("访问Discord登录页", login_screenshot)
 
- 
-                # 3. 进入Project页面
+                # 3. 进入登录页面
+                self.log("📂 进入登录页面")
+                sb.uc_open_with_reconnect(LOGIN_URL, reconnect_time=25)
+                sb.wait_for_element(".auth-social-btn-discord", timeout=20)
+                sb.click(".auth-social-btn-discord")
+                time.sleep(10)        
+                self.oauth_debug(sb)
+                time.sleep(5)
+                login_screenshot = f"{self.screenshot_dir}/login.png"
+                sb.save_screenshot(login_screenshot)
+                self.send_telegram_notify("进入登录页面", login_screenshot)
+                return                
+                
+                # 4. 进入Project页面
                 self.log("📂 进入Project页面")
                 sb.uc_open_with_reconnect(PROJECT_URL, reconnect_time=25)
                 time.sleep(5)
@@ -285,7 +296,7 @@ class AclcloudsRenewal:
                 self.send_telegram_notify("访问项目页面", project_screenshot)
                 return
 
-                # 4. 判断是否有Renew按钮
+                # 5. 判断是否有Renew按钮
                 selector = "button:contains('Renew')"
                 self.log("🖱️ 查找Renew按钮")
                 time_before = self.get_expiry_time(sb)
@@ -305,14 +316,14 @@ class AclcloudsRenewal:
                 #sb.save_screenshot(renew_screenshot)
                 #self.send_telegram_notify("已点击Renew按钮", renew_screenshot)
 
-                # 5.查找I am not a robot坐标并点击
+                # 6.查找I am not a robot坐标并点击
                 self.try_click_robot(sb)
                 time.sleep(3)
                 robot_screenshot = f"{self.screenshot_dir}/robot.png"
                 sb.save_screenshot(robot_screenshot)
                 self.send_telegram_notify("已点击I am not a robot按钮", robot_screenshot)
 
-                # 6.检查是否出现验证码点持续点击第一张图片
+                # 7.检查是否出现验证码点持续点击第一张图片
                 if not sb.is_element_visible("text=Server renewed successfully"):
                     self.log("🖱️ 开始持续点击破解")
                     for i in range(20): # 尝试20次
@@ -327,7 +338,7 @@ class AclcloudsRenewal:
                             self.send_telegram_notify("验证码图片点击完毕", verify_screenshot)
                             break
                         
-                # 7.刷新项目页面取剩余时间
+                # 8.刷新项目页面取剩余时间
                 self.log("📂 再次进入Project页面")
                 sb.uc_open_with_reconnect(PROJECT_URL, reconnect_time=25)
                 time.sleep(5)
