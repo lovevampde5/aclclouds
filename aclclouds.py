@@ -195,31 +195,27 @@ class AclcloudsRenewal:
 
             #self.shot(sb, f"oauth_debug_{i}.png", "OAuth状态")
 
-            body = sb.get_text("body").lower()
+            try:
+                self.log("🔍 查找 Discord 按钮")
 
-            if "authorize" in body:
-                try:
-                    self.log("🟢 检测到 Authorize，尝试点击")
-
-                    els = sb.find_elements("button") + sb.find_elements("a")
-
-                    for el in els:
-                        try:
-                            if "authorize" in (el.text or "").lower():
-                                sb.execute_script(
-                                    "arguments[0].scrollIntoView({block:'center'});",
-                                    el
-                                )
-                                time.sleep(1)
-                                sb.execute_script("arguments[0].click();", el)
-                                self.log("✅ 已点击 Authorize")
-                                time.sleep(10)
-                                break
-                        except:
-                            pass
-                except:
-                    pass
-
+                time.sleep(3)
+                buttons = sb.find_elements("button")
+                self.log(f"找到按钮数量: {len(buttons)}")
+                for b in buttons:
+                    try:
+                        self.log(
+                            f"按钮 TEXT={repr(b.text)} "
+                            f"CLASS={b.get_attribute('class')} "
+                            f"TYPE={b.get_attribute('type')}"
+                        )
+                    except:
+                        pass
+                # 尝试点击授权按钮
+                sb.click("button[type='submit']")
+                self.log("✅ 已点击 submit 按钮")
+                time.sleep(10)
+            except Exception as e:
+                self.log(f"❌ 点击失败: {e}")
             if "client.hnhost.net" in sb.get_current_url():
                 self.log("✅ 已跳回目标站点（OAuth完成）")
                 return True
