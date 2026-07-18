@@ -20,6 +20,7 @@ print(f"[DEBUG] Env XAUTHORITY: {os.environ.get('XAUTHORITY')}")
 
 from seleniumbase import SB
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 # ================= 配置区域 =================
 PROXY_URL = os.getenv("PROXY", "")  # 代理
@@ -161,51 +162,25 @@ class AclcloudsRenewal:
             time.sleep(2)
 
             # ======================
-            # 页面滚动检测
+            # 页面滚动
             # ======================
             try:
                 sb.execute_script(
                     "window.scrollTo(0, document.body.scrollHeight);"
                 )
-                time.sleep(0.5)
+
+                time.sleep(1)
 
                 sb.execute_script(
-                    "window.scrollTo(0, 0);"
+                    "window.scrollTo(0,0);"
                 )
 
-                sb.execute_script("""
-                    document.body.scrollTop = document.body.scrollHeight;
-                    document.documentElement.scrollTop = document.documentElement.scrollHeight;
-                """)
-
-                sb.execute_script("""
-                    let all = document.querySelectorAll('*');
-                    for (let el of all) {
-                        try {
-                            if (el.scrollHeight > el.clientHeight) {
-                                el.scrollTop = el.scrollHeight;
-                            }
-                        } catch(e){}
-                    }
-                """)
-
-                sb.send_keys("body", Keys.PAGE_DOWN)
-                sb.send_keys("body", Keys.PAGE_DOWN)
-                sb.send_keys("body", Keys.END)
-
-                try:
-                    ActionChains(sb.driver)\
-                        .send_keys(Keys.PAGE_DOWN)\
-                        .perform()
-                except:
-                    pass
-
-            except:
+            except Exception:
                 pass
 
 
             # ======================
-            # Discord OAuth 授权点击
+            # Discord 授权按钮
             # ======================
             try:
 
@@ -218,22 +193,18 @@ class AclcloudsRenewal:
                 )
 
 
-                clicked = False
-
-
-                for b in buttons:
+                for btn in buttons:
 
                     try:
 
-                        txt = (b.text or "").strip()
+                        text = (btn.text or "").strip()
 
                         self.log(
-                            f"检测按钮: {repr(txt)}"
+                            f"按钮: {repr(text)}"
                         )
 
 
-                        # Discord 中文授权按钮
-                        if txt in [
+                        if text in [
                             "授权",
                             "Authorize",
                             "Authorise"
@@ -247,83 +218,73 @@ class AclcloudsRenewal:
                             sb.execute_script(
                                 """
                                 arguments[0].scrollIntoView({
-                                block:'center'
+                                    block:'center'
                                 });
                                 """,
-                                b
+                                btn
                             )
-
 
                             time.sleep(1)
 
 
-                            # 真实鼠标点击
-                            ActionChains(sb.driver)\
-                                .move_to_element(b)\
-                                .click()\
-                                .perform()
+                            ActionChains(
+                                sb.driver
+                            ).move_to_element(
+                                btn
+                            ).click().perform()
 
 
                             self.log(
-                                "✅ 已点击授权"
+                                "✅ OAuth授权点击完成"
                             )
 
 
-                            clicked = True
-
-                            time.sleep(10)
+                            time.sleep(8)
 
                             break
 
 
                     except Exception as e:
-
                         self.log(
-                            f"按钮处理失败: {e}"
+                            f"按钮错误:{e}"
                         )
 
 
-                if not clicked:
-
-                    self.log(
-                        "⚠️ 没找到授权按钮"
-                    )
-
-
-           except Exception as e:
+            except Exception as e:
 
                 self.log(
-                    f"❌ OAuth点击异常: {e}"
+                    f"OAuth按钮检测失败:{e}"
                 )
 
 
             # ======================
-            # 检测是否回站
+            # 判断跳转
             # ======================
             try:
 
                 url = sb.get_current_url()
 
                 self.log(
-                    f"当前URL: {url}"
+                    f"当前URL:{url}"
                 )
 
 
                 if "client.hnhost.net" in url:
 
                     self.log(
-                        "✅ 已跳回目标站点（OAuth完成）"
+                        "✅ OAuth完成"
                     )
 
                     return True
 
 
             except:
+
                 pass
 
 
         self.log(
-            "❌ OAuth 超时失败"
+            "❌ OAuth失败"
         )
 
         return False
