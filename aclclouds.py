@@ -23,7 +23,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 # ================= 配置区域 =================
 PROXY_URL = os.getenv("PROXY", "")  # 代理
-COOKIE = os.getenv("COOKIE")  # 需要注入的Cookies
+EMAIL = os.getenv("EMAIL")  # discord邮箱
+PASSWORD = os.getenv("PASSWORD")  # discord密码
 TG_TOKEN = os.getenv("TG_TOKEN")  # tg通知token
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")  # tg通知chat_id
 
