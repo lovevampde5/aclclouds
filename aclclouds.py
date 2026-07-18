@@ -202,6 +202,26 @@ class AclcloudsRenewal:
 
 
                             sb.execute_script("""
+                                let els=document.querySelectorAll('*');
+                                for(let el of els){
+
+                                    try{
+
+                                        if(el.scrollHeight>el.clientHeight){
+
+                                            el.scrollTop=el.scrollHeight;
+
+                                        }
+
+                                    }catch(e){}
+
+                                }
+                            """)
+
+
+                            time.sleep(2)
+                            
+                            sb.execute_script("""
                             document.querySelectorAll("button")[1].click();
                             """)
 
