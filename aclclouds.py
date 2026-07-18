@@ -148,126 +148,185 @@ class AclcloudsRenewal:
 
         time.sleep(10)
 
-   # ======================
-   # OAuth
-   # ======================
-   def oauth_debug(self, sb):
-       self.log("🔐 OAuth 页面分析开始")
-       for i in range(20):
-           self.log(f"🔍 分析 {i+1}/20")
-           time.sleep(2)
-           # ======================
-           # 页面滚动检测
-           # ======================
-           try:
-               sb.execute_script(
-                   "window.scrollTo(0, document.body.scrollHeight);"
-               )
-               time.sleep(0.5)
-               sb.execute_script(
-                   "window.scrollTo(0, 0);"
-               )
-               sb.execute_script("""
-                   document.body.scrollTop = document.body.scrollHeight;
-                   document.documentElement.scrollTop = document.documentElement.scrollHeight;
-               """)
-               sb.execute_script("""
-                   let all = document.querySelectorAll('*');
-                   for (let el of all) {
-                      try {
-                           if (el.scrollHeight > el.clientHeight) {
-                               el.scrollTop = el.scrollHeight;
-                           }
-                       } catch(e){}
-                   }
-               """)
-               sb.send_keys("body", Keys.PAGE_DOWN)
-               sb.send_keys("body", Keys.PAGE_DOWN)
-               sb.send_keys("body", Keys.END)
-               try:
-                   ActionChains(sb.driver)\
-                       .send_keys(Keys.PAGE_DOWN)\
-                       .perform()
-               except:
-                   pass
-           except:
-               pass
-           # ======================
-           # Discord OAuth 授权点击
-           # ======================
-           try:
-               self.log("🔍 查找 Discord 授权按钮")
-               buttons = sb.find_elements("button")
-               self.log(
-                   f"找到按钮数量: {len(buttons)}"
-               )
-               clicked = False
-               for b in buttons:
-                   try:
-                       txt = (b.text or "").strip()
-                       self.log(
-                          f"检测按钮: {repr(txt)}"
-                       )
-                       # Discord 中文授权按钮
-                       if txt in [
-                           "授权",
-                          "Authorize",
-                           "Authorise"
-                       ]:
-                           self.log(
-                               "🟢 找到授权按钮"
-                           )
-                           sb.execute_script(
-                               """
-                               arguments[0].scrollIntoView({
-                                   block:'center'
-                               });
-                               """,
-                               b
-                           )
-                           time.sleep(1)
-                           # 真实鼠标点击
-                           ActionChains(sb.driver)\
-                               .move_to_element(b)\
-                               .click()\
-                               .perform()
-                           self.log(
-                               "✅ 已点击授权"
-                           )
-                           clicked = True
-                           time.sleep(10)
-                           break
-                   except Exception as e:
-                       self.log(
-                           f"按钮处理失败: {e}"
-                       )
-               if not clicked:
-                   self.log(
-                       "⚠️ 没找到授权按钮"
-                   )
+    # ======================
+    # OAuth
+    # ======================
+    def oauth_debug(self, sb):
+
+        self.log("🔐 OAuth 页面分析开始")
+
+        for i in range(20):
+
+            self.log(f"🔍 分析 {i+1}/20")
+            time.sleep(2)
+
+            # ======================
+            # 页面滚动检测
+            # ======================
+            try:
+                sb.execute_script(
+                    "window.scrollTo(0, document.body.scrollHeight);"
+                )
+                time.sleep(0.5)
+
+                sb.execute_script(
+                    "window.scrollTo(0, 0);"
+                )
+
+                sb.execute_script("""
+                    document.body.scrollTop = document.body.scrollHeight;
+                    document.documentElement.scrollTop = document.documentElement.scrollHeight;
+                """)
+
+                sb.execute_script("""
+                    let all = document.querySelectorAll('*');
+                    for (let el of all) {
+                        try {
+                            if (el.scrollHeight > el.clientHeight) {
+                                el.scrollTop = el.scrollHeight;
+                            }
+                        } catch(e){}
+                    }
+                """)
+
+                sb.send_keys("body", Keys.PAGE_DOWN)
+                sb.send_keys("body", Keys.PAGE_DOWN)
+                sb.send_keys("body", Keys.END)
+
+                try:
+                    ActionChains(sb.driver)\
+                        .send_keys(Keys.PAGE_DOWN)\
+                        .perform()
+                except:
+                    pass
+
+            except:
+                pass
+
+
+            # ======================
+            # Discord OAuth 授权点击
+            # ======================
+            try:
+
+                self.log("🔍 查找 Discord 授权按钮")
+
+                buttons = sb.find_elements("button")
+
+                self.log(
+                    f"找到按钮数量: {len(buttons)}"
+                )
+
+
+                clicked = False
+
+
+                for b in buttons:
+
+                    try:
+
+                        txt = (b.text or "").strip()
+
+                        self.log(
+                            f"检测按钮: {repr(txt)}"
+                        )
+
+
+                        # Discord 中文授权按钮
+                        if txt in [
+                            "授权",
+                            "Authorize",
+                            "Authorise"
+                        ]:
+
+                            self.log(
+                                "🟢 找到授权按钮"
+                            )
+
+
+                            sb.execute_script(
+                                """
+                                arguments[0].scrollIntoView({
+                                block:'center'
+                                });
+                                """,
+                                b
+                            )
+
+
+                            time.sleep(1)
+
+
+                            # 真实鼠标点击
+                            ActionChains(sb.driver)\
+                                .move_to_element(b)\
+                                .click()\
+                                .perform()
+
+
+                            self.log(
+                                "✅ 已点击授权"
+                            )
+
+
+                            clicked = True
+
+                            time.sleep(10)
+
+                            break
+
+
+                    except Exception as e:
+
+                        self.log(
+                            f"按钮处理失败: {e}"
+                        )
+
+
+                if not clicked:
+
+                    self.log(
+                        "⚠️ 没找到授权按钮"
+                    )
+
+
            except Exception as e:
-               self.log(
-                   f"❌ OAuth点击异常: {e}"
-               )
-           # ======================
-           # 检测是否回站
-           # ======================
-           try:
-               url = sb.get_current_url()
-               self.log(
-                   f"当前URL: {url}"
-               )
-               if "client.hnhost.net" in url:
-                   self.log(
-                       "✅ 已跳回目标站点（OAuth完成）"
-                   )
-                   return True
-           except:
-               pass
-       self.log(
-           "❌ OAuth 超时失败"
-       )
-       return False
+
+                self.log(
+                    f"❌ OAuth点击异常: {e}"
+                )
+
+
+            # ======================
+            # 检测是否回站
+            # ======================
+            try:
+
+                url = sb.get_current_url()
+
+                self.log(
+                    f"当前URL: {url}"
+                )
+
+
+                if "client.hnhost.net" in url:
+
+                    self.log(
+                        "✅ 已跳回目标站点（OAuth完成）"
+                    )
+
+                    return True
+
+
+            except:
+                pass
+
+
+        self.log(
+            "❌ OAuth 超时失败"
+        )
+
+        return False
     
     def run(self):
         self.log("=" * 40)
