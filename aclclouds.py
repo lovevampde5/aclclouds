@@ -348,9 +348,9 @@ class AclcloudsRenewal:
                 self.discord_login(sb, EMAIL, PASSWORD)
                 self.log("✅ 登录Discord成功")
                 time.sleep(10)
-                login_screenshot = f"{self.screenshot_dir}/login.png"
-                sb.save_screenshot(login_screenshot)
-                self.send_telegram_notify("访问Discord登录页", login_screenshot)
+                #login_screenshot = f"{self.screenshot_dir}/login.png"
+                #sb.save_screenshot(login_screenshot)
+                #self.send_telegram_notify("访问Discord登录页", login_screenshot)
 
                 # 3. 进入登录页面
                 self.log("📂 进入登录页面")
@@ -360,9 +360,9 @@ class AclcloudsRenewal:
                 time.sleep(10)        
                 self.oauth_debug(sb)
                 time.sleep(5)
-                login_screenshot = f"{self.screenshot_dir}/login.png"
-                sb.save_screenshot(login_screenshot)
-                self.send_telegram_notify("进入登录页面", login_screenshot) 
+                #login_screenshot = f"{self.screenshot_dir}/login.png"
+                #sb.save_screenshot(login_screenshot)
+                #self.send_telegram_notify("进入登录页面", login_screenshot) 
                 
                 # 4. 进入Project页面
                 self.log("📂 进入Project页面")
@@ -374,9 +374,9 @@ class AclcloudsRenewal:
                 let closeBtn = btns.find(b => b.innerText.includes('Close'));
                 if (closeBtn) closeBtn.click();
                 """) # 关闭 Close
-                project_screenshot = f"{self.screenshot_dir}/project.png"
-                sb.save_screenshot(project_screenshot)
-                self.send_telegram_notify("访问项目页面", project_screenshot)
+                #project_screenshot = f"{self.screenshot_dir}/project.png"
+                #sb.save_screenshot(project_screenshot)
+                #self.send_telegram_notify("访问项目页面", project_screenshot)
 
                 # 5. 判断是否有Renew按钮
                 selector = "button:contains('Renew')"
